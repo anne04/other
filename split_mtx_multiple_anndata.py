@@ -19,7 +19,10 @@ for i in range(0, len(patient_metadata)):
             tumor_NR.append(patient_metadata['sample_ID'][i])
         elif patient_metadata['treatment_Resp'][i] == 'anti-PD1_R': 
             tumor_R.append(patient_metadata['sample_ID'][i])
-        
+
+
+
+
 temp = temp.tocsc()
 count_matrix = temp
 count_matrix = np.transpose(count_matrix)
@@ -29,9 +32,14 @@ adata.var_names = gene_names
 adata.obs["cell_type"] = list(cell_metadata['cell_to_cluster'])
 adata.write('GSE206325_cell_vs_gene.h5ad', compression="gzip")
 
-
+tumor_R = tumor_R[0:10]
+tumor_NR = tumor_NR[0:10]
 
 sample_id_list = [824, 839]
+
+anndata_list = []
+sample_id_list = tumor_R + tumor_NR
+total_cells = 0
 for sample_id in sample_id_list:
     start_column = 0
     while str(sample_id) not in cell_barcodes[start_column]:
@@ -42,14 +50,18 @@ for sample_id in sample_id_list:
         end_column = end_column + 1
     
     end_column = end_column - 1
-    
     count_matrix = temp[:,start_column:end_column+1]
     count_matrix = np.transpose(count_matrix)
     adata = anndata.AnnData(count_matrix)
     adata.obs_names = cell_barcodes[start_column:end_column+1]
     adata.var_names = gene_names
     adata.obs["cell_type"] = list(cell_metadata['cell_to_cluster'])[start_column:end_column+1]
-    adata.write('sample'+ str(sample_id) +'.h5ad', compression="gzip")
+    anndata_list.append(adata)
+    total_cells = total_cells + (end_column-start_column+1)
+    #adata.write('sample'+ str(sample_id) +'.h5ad', compression="gzip")
 
+print('total cells %d'%total_cells)
+adata = anndata.concat(anndata_list)
+adata.write('samples20.h5ad', compression="gzip")
 
 # https://anndata.readthedocs.io/en/latest/tutorials/notebooks/getting-started.html
