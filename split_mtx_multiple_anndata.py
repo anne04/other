@@ -4,14 +4,32 @@ import anndata
 
 
 temp = scipy.io.mmread('GSE206325_gene_vs_cell.mtx')
-temp = temp.tocsc()
 cell_barcodes = pd.read_csv('cell_barcodes.csv', header=None) 
 cell_barcodes = list(cell_barcodes[0])
-
 gene_names = pd.read_csv('gene_names.csv', header=None) 
 gene_names = list(gene_names[0])
-
 cell_metadata = pd.read_csv('cell_metadata.csv') 
+
+patient_metadata = pd.read_csv('GSE206325_sample_annots_Liver_Treated_patients.csv') 
+tumor_R = []
+tumor_NR = []
+for i in range(0, len(patient_metadata)):
+    if patient_metadata['tissue'][i] == 'Tumor':# and patient_metadata['Immune_Infiltration'][i] == 'High':
+        if patient_metadata['treatment_Resp'][i] == 'anti-PD1_NR':
+            tumor_NR.append(patient_metadata['sample_ID'][i])
+        elif patient_metadata['treatment_Resp'][i] == 'anti-PD1_R': 
+            tumor_R.append(patient_metadata['sample_ID'][i])
+        
+temp = temp.tocsc()
+count_matrix = temp
+count_matrix = np.transpose(count_matrix)
+adata = anndata.AnnData(count_matrix)
+adata.obs_names = cell_barcodes 
+adata.var_names = gene_names
+adata.obs["cell_type"] = list(cell_metadata['cell_to_cluster'])
+adata.write('GSE206325_cell_vs_gene.h5ad', compression="gzip")
+
+
 
 sample_id_list = [824, 839]
 for sample_id in sample_id_list:
