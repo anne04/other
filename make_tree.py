@@ -88,3 +88,21 @@ plt.figure(figsize=(20,10))
 tree.plot_tree(clf, feature_names=genes, class_names=clf.classes_, filled=True, max_depth=5)
 plt.savefig('tree.png')
    
+from sklearn.tree import DecisionTreeClassifier
+import numpy as np
+
+# Example: train your decision tree
+clf = DecisionTreeClassifier(max_depth=10, random_state=42)
+clf.fit(X_train, y_train)
+
+# Get feature indices used for splitting
+used_features = clf.tree_.feature
+
+# Remove -2 entries (they mean "leaf node", no split)
+used_features = used_features[used_features != -2]
+
+# Get unique features
+unique_features = np.unique(used_features)
+
+print(f"Number of unique genes used: {len(unique_features)}")
+print(f"Indices of features used: {unique_features}")
