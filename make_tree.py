@@ -14,6 +14,11 @@ for i in range (0, len(cluster_type_info)):
     id_to_type[cluster_type_info['cluster_ID'][i]] = cluster_type_info['type'][i]
     
 
+##
+'''
+1-Tfh-like --- CD4 (out of these: 4-Effector-Memory, 5-Memory, 1-Tfh-like, 2-Th1 GZMK, 3-Th1/Th17)
+2-Dysfunctional-progenitor --- CD8 (out of these: 7-Cytotoxic, 3-Dysfunctional-Proliferating, 4-Dysfunctional-effector, 1-Dysfunctional-terminal, 2-Dysfunctional-progenitor, 5-Effector, 6-Memory)
+'''
 
 adata = sc.read_h5ad("GSE206325_samples20.h5ad")
 sc.pp.normalize_total(adata, target_sum=1e4)
