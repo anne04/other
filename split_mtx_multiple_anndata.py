@@ -30,6 +30,9 @@ for i in range(0, len(patient_metadata)):
 
 
 
+tumor_R = tumor_R[0:10]
+tumor_NR = tumor_NR[0:10]
+
 
 temp = temp.tocsc()
 count_matrix = temp
@@ -40,10 +43,7 @@ adata.var_names = gene_names
 adata.obs["cell_type"] = list(cell_metadata['cell_to_cluster'])
 adata.write('GSE206325_cell_vs_gene.h5ad', compression="gzip")
 
-tumor_R = tumor_R[0:10]
-tumor_NR = tumor_NR[0:10]
-
-sample_id_list = [824, 839]
+#sample_id_list = [824, 839]
 
 anndata_list = []
 sample_id_list = tumor_R + tumor_NR
