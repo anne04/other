@@ -37,10 +37,10 @@ for i in range(0, len(y)):
 
 
 # Step 2: Train-test split (optional, for evaluation)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=100)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=10)
 
 # Step 3: Train a Decision Tree
-clf = DecisionTreeClassifier(max_depth=10, random_state=100)
+clf = DecisionTreeClassifier(max_depth=10, random_state=10)
 clf.fit(X_train, y_train)
 
 # Step 4: Get feature (gene) importance
@@ -53,6 +53,24 @@ top_markers = marker_df.sort_values('importance', ascending=False).head(20)
 
 print(top_markers)
 
+##################
+used_features = clf.tree_.feature
+
+# Remove -2 entries (they mean "leaf node", no split)
+used_features = used_features[used_features != -2]
+
+# Get unique features
+unique_features = np.unique(used_features)
+
+print(f"Number of unique genes used: {len(unique_features)}")
+print(f"Indices of features used: {unique_features}")
+
+gene_names = list(genes)
+selected_genes = [gene_names[i] for i in unique_features]
+
+print(f"Selected genes used in the tree:")
+for gene in selected_genes:
+    print(gene)
 ##################
 y_pred = clf.predict(X_test)
 sensitivity_per_class = recall_score(y_test, y_pred, average=None)
@@ -85,8 +103,8 @@ import matplotlib.pyplot as plt
 
 plt.clf()
 plt.figure(figsize=(20,10))
-tree.plot_tree(clf, feature_names=genes, class_names=clf.classes_, filled=True, max_depth=5)
-plt.savefig('tree.png')
+tree.plot_tree(clf, feature_names=genes, class_names=clf.classes_, filled=True, max_depth=10)
+plt.savefig('tree.svg')
    
 from sklearn.tree import DecisionTreeClassifier
 import numpy as np
