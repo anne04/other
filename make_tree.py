@@ -140,7 +140,7 @@ importances = clf.feature_importances_
 # Step 5: Sort top marker genes
 gene_importance = dict()
 marker_df = pd.DataFrame({'gene': gene_names, 'importance': importances})
-top_markers = marker_df.sort_values('importance', ascending=False).head(20)
+top_markers = marker_df.sort_values('importance', ascending=False).head(20) 
 print(top_markers)
 
 # iterate over marker_df to get the importance of each feature
