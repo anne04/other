@@ -16,7 +16,7 @@ cluster_type_info = pd.read_csv('GSE206325_full_HCC_cluster_annotation.csv')
 id_to_type = dict()
 
 # "type"
-
+'''
 for i in range (0, len(cluster_type_info)):
     id_to_type[cluster_type_info['cluster_ID'][i]] = cluster_type_info['type'][i]
 
@@ -24,7 +24,7 @@ triad_types = ['CD4', 'CD8', 'DC']
 for id in id_to_type.keys():
     if id_to_type[id] not in triad_types:
         id_to_type[id] = 'other'
-
+'''
 '''
 ## "subgroup"
 for i in range (0, len(cluster_type_info)):
@@ -172,4 +172,5 @@ plt.figure(figsize=(20,20))
 tree.plot_tree(clf, feature_names=gene_names, class_names=clf.classes_, filled=True, max_depth=10)
 #plt.savefig('tree_subgroup_filtered.svg')
 #plt.savefig('tree_subgroup_nofilter.svg')
-plt.savefig('tree_type_n_subgroup_filtered.svg')   
+#plt.savefig('tree_type_n_subgroup_filtered.svg')   
+plt.savefig('tree_type_n_subgroup_nofilter.svg')   
