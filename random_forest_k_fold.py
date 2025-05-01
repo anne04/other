@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
 import scanpy as sc
@@ -147,43 +147,50 @@ for fold in K_folds:
     #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=100)
     
     # Step 3: Train a Decision Tree
-    clf = DecisionTreeClassifier(max_depth=5, random_state=100)
-    clf.fit(X_train, y_train)
+    rf_clf = RandomForestClassifier(n_estimators=5, class_weight='balanced', max_depth=10, random_state=100)
+    rf_clf.fit(X_train, y_train)
     ##
     ##################
-    y_pred = clf.predict(X_test)
+    y_pred = rf_clf.predict(X_test)
     
-    # Get confusion matrix
-    cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
+    # Confusion Matrix
+    classes = rf_clf.classes_
+    cm = confusion_matrix(y_test, y_pred, labels=classes)
+    #print("Confusion Matrix:\n", cm)
     
-    sensitivity_per_class = recall_score(y_test, y_pred, average=None)
-    print("Sensitivity (Recall) for each class:")
-    for label, sens in zip(clf.classes_, sensitivity_per_class):
-        print(f"Class {label}: {sens:.2f}")
+    # Sensitivity (Recall) per class
+    sensitivity_per_class = recall_score(y_test, y_pred, average=None, labels=classes)
     
-    # Step 2: Calculate specificity for each class
+    # Specificity per class
     specificity_per_class = []
+    for i in range(len(classes)):
+        # For class i:
+        # TP = cm[i, i]
+        # FN = sum of row i excluding TP
+        # FP = sum of column i excluding TP
+        # TN = all else
     
-    for i in range(len(clf.classes_)):
-        # True negatives: sum all cells except row i and column i
-        tn = np.sum(np.delete(np.delete(cm, i, axis=0), i, axis=1))
-        # False positives: sum column i, except the diagonal element
-        fp = np.sum(np.delete(cm[:, i], i))
-        
-        specificity = tn / (tn + fp)
+        tn = np.sum(np.delete(np.delete(cm, i, axis=0), i, axis=1))  # True Negatives
+        fp = np.sum(np.delete(cm[:, i], i))                          # False Positives
+        specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
         specificity_per_class.append(specificity)
     
-    # Step 3: Display
-    print("\nSpecificity for each class:")
-    for label, spec in zip(clf.classes_, specificity_per_class):
-        print(f"Class {label}: {spec:.2f}")
+    # Create DataFrame
+    metrics_df = pd.DataFrame({
+        'Class': classes,
+        'Sensitivity (Recall)': sensitivity_per_class,
+        'Specificity': specificity_per_class
+    })
     
+    print("\nRandom Forest Performance Metrics:")
+    print(metrics_df)
     
+
     
     
     
     # Step 4: Get feature (gene) importance
-    importances = clf.feature_importances_
+    importances = rf_clf.feature_importances_
     # Step 5: Sort top marker genes
     gene_importance = dict()
     marker_df = pd.DataFrame({'gene': gene_names, 'importance': importances})
