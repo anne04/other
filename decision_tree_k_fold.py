@@ -92,7 +92,7 @@ i = 0
 while i < len(eligible_test_patient_ids):
     count = 0
     subset = []
-    while i < len(eligible_test_patient_ids) and count<=130000:
+    while i < len(eligible_test_patient_ids) and count<=120000:
         patient = eligible_test_patient_ids[i]
         count = count + patient_vs_cells[patient]
         subset.append(patient)
@@ -139,7 +139,7 @@ for fold in K_folds:
     X_train = X[train_rows, :]
     y_train = list(np.array(y)[train_rows])
     print("training cells count %d"%len(train_rows))
-    k = k+1
+    
     
 
 
@@ -147,7 +147,7 @@ for fold in K_folds:
     #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=100)
     
     # Step 3: Train a Decision Tree
-    clf = DecisionTreeClassifier(max_depth=5, random_state=100)
+    clf = DecisionTreeClassifier(max_depth=5, class_weight='balanced', random_state=100)
     clf.fit(X_train, y_train)
     ##
     ##################
@@ -201,7 +201,7 @@ for fold in K_folds:
     unique_features = np.unique(used_features)
     print(f"Number of unique genes used: {len(unique_features)}")
     #print(f"Indices of features used: {unique_features}")
-    '''
+   
     gene_names = list(gene_names)
     selected_genes = []
     for i in unique_features:
@@ -211,7 +211,12 @@ for fold in K_folds:
     print(f"Selected genes used in the tree:")
     for gene in selected_genes:
         print("%s: %g"%(gene[0], gene[1]))
-    '''
+
+    plt.clf()
+    plt.figure(figsize=(20,20))
+    tree.plot_tree(clf, feature_names=gene_names, class_names=clf.classes_, filled=True, max_depth=5)
+    plt.savefig('tree_type_n_subgroup_filtered_fold'+ str(k) +'.svg')  
+    k = k+1
 ###############
 
 plt.clf()
