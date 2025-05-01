@@ -73,7 +73,10 @@ for i in range(0, len(y)):
     y[i] = id_to_type[y[i]]
 
 #########################################################################
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Assume X = gene expression matrix (cells x genes), y = class labels
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
 # Train Random Forest
 rf_clf = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42)
@@ -83,31 +86,39 @@ rf_clf.fit(X_train, y_train)
 y_pred = rf_clf.predict(X_test)
 
 # Confusion Matrix
-cm = confusion_matrix(y_test, y_pred, labels=rf_clf.classes_)
+classes = rf_clf.classes_
+cm = confusion_matrix(y_test, y_pred, labels=classes)
 print("Confusion Matrix:\n", cm)
 
 # Sensitivity (Recall) per class
-sensitivity_per_class = recall_score(y_test, y_pred, average=None, labels=rf_clf.classes_)
+sensitivity_per_class = recall_score(y_test, y_pred, average=None, labels=classes)
 
 # Specificity per class
 specificity_per_class = []
+for i in range(len(classes)):
+    # For class i:
+    # TP = cm[i, i]
+    # FN = sum of row i excluding TP
+    # FP = sum of column i excluding TP
+    # TN = all else
 
-for i in range(len(rf_clf.classes_)):
     tn = np.sum(np.delete(np.delete(cm, i, axis=0), i, axis=1))  # True Negatives
     fp = np.sum(np.delete(cm[:, i], i))                          # False Positives
-    specificity = tn / (tn + fp)
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
     specificity_per_class.append(specificity)
 
-# Metrics DataFrame
+# Create DataFrame
 metrics_df = pd.DataFrame({
-    'Class': rf_clf.classes_,
+    'Class': classes,
     'Sensitivity (Recall)': sensitivity_per_class,
     'Specificity': specificity_per_class
 })
 
 print("\nRandom Forest Performance Metrics:")
 print(metrics_df)
-################################################################3
+
+
+
 
 # Step 4: Get feature (gene) importance
 importances = clf.feature_importances_
@@ -148,4 +159,27 @@ plt.figure(figsize=(20,20))
 tree.plot_tree(clf, feature_names=genes, class_names=clf.classes_, filled=True, max_depth=10)
 plt.savefig('tree_subgroup_filtered.svg')
 plt.savefig('tree_subgroup_nofilter.svg')
-   
+
+# Train Random Forest
+from sklearn.ensemble import RandomForestClassifier
+
+rf_clf = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42)
+rf_clf.fit(X_train, y_train)
+
+# Get feature importances directly
+importances = rf_clf.feature_importances_  # This is an array with importance for each feature (gene)
+
+# Map back to gene names
+gene_importance = {gene_names[i]: importance for i, importance in enumerate(importances)}
+
+# Sort genes by importance
+sorted_genes = sorted(gene_importance.items(), key=lambda x: x[1], reverse=True)
+
+# Display
+print("Genes sorted by Random Forest importance:")
+for gene, importance in sorted_genes[:20]:  # Top 20 genes
+    print(f"{gene}: {importance:.4f}")
+
+
+
+
