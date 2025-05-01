@@ -12,6 +12,13 @@ import matplotlib.pyplot as plt
 
 filter_gene = 1
 
+patient_vs_samples = pd.read_csv('GSE206325_sample_annots_Liver_Treated_patients.csv')
+patient_vs_samples_dict = defaultdict(list)
+for i in range (0, len(patient_vs_samples)):
+    patient_vs_samples_dict[patient_vs_samples['patient_ID'][i]].append([patient_vs_samples['sample_ID'][i], patient_vs_samples['tissue'][i]])
+
+
+
 cluster_type_info = pd.read_csv('GSE206325_full_HCC_cluster_annotation.csv')
 id_to_type = dict()
 
@@ -172,5 +179,13 @@ plt.figure(figsize=(20,20))
 tree.plot_tree(clf, feature_names=gene_names, class_names=clf.classes_, filled=True, max_depth=10)
 #plt.savefig('tree_subgroup_filtered.svg')
 #plt.savefig('tree_subgroup_nofilter.svg')
+
+
 #plt.savefig('tree_type_n_subgroup_filtered.svg')   
 plt.savefig('tree_type_n_subgroup_nofilter.svg')   
+# patient_vs_samples = defaultdict(list) # patient_vs_samples[patient_id] = [[sample_id, type], [sample_id, type], [sample_id, type]] 
+# Just check if each patient has at least one "tumor" sample. Also how many cells per patient. 
+# for K fold: keep two patients for test, and all other for training
+# for each fold, 
+    #get the list of important markers then combine it - intersection
+# intersect the set of imp genes, and report the average sensitivity and specificity
