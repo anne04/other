@@ -181,5 +181,22 @@ for gene, importance in sorted_genes[:20]:  # Top 20 genes
     print(f"{gene}: {importance:.4f}")
 
 
+# Initialize set to collect unique feature indices
+unique_feature_indices = set()
 
+# Loop through each decision tree in the forest
+for estimator in rf_clf.estimators_:
+    features = estimator.tree_.feature
+    split_features = features[features != -2]  # -2 means it's a leaf
+    unique_feature_indices.update(split_features)
+
+# Convert to sorted list
+unique_feature_indices = sorted(unique_feature_indices)
+
+# Map to gene names
+unique_genes = [gene_names[i] for i in unique_feature_indices]
+
+# Output
+print(f"Number of unique genes used in splits: {len(unique_genes)}")
+print("Unique genes used:", unique_genes)
 
