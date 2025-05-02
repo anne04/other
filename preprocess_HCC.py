@@ -51,7 +51,7 @@ patient_vs_samples_dict = patient_vs_samples_dict_temp
 # Find the K folds
 eligible_test_patient_ids = []
 for patient in patient_vs_cells:
-    if patient_vs_cells[patient] > 10000:
+    if patient_vs_cells[patient] > 0:
         eligible_test_patient_ids.append(patient)
         
 # K = len(eligible_test_patient_ids)
