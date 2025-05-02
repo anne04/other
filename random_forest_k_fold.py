@@ -92,7 +92,7 @@ i = 0
 while i < len(eligible_test_patient_ids):
     count = 0
     subset = []
-    while i < len(eligible_test_patient_ids) and count<=130000:
+    while i < len(eligible_test_patient_ids) and count<=120000:
         patient = eligible_test_patient_ids[i]
         count = count + patient_vs_cells[patient]
         subset.append(patient)
@@ -147,7 +147,7 @@ for fold in K_folds:
     #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=100)
     
     # Step 3: Train a Decision Tree
-    rf_clf = RandomForestClassifier(n_estimators=5, class_weight='balanced', max_depth=10, random_state=100)
+    rf_clf = RandomForestClassifier(n_estimators=5, class_weight='balanced', max_depth=5, random_state=100)
     rf_clf.fit(X_train, y_train)
     ##
     ##################
@@ -181,44 +181,46 @@ for fold in K_folds:
         'Sensitivity (Recall)': sensitivity_per_class,
         'Specificity': specificity_per_class
     })
+    for 
+
     
     print("\nRandom Forest Performance Metrics:")
     print(metrics_df)
-    
 
-    
-    
-    
     # Step 4: Get feature (gene) importance
     importances = rf_clf.feature_importances_
-    # Step 5: Sort top marker genes
-    gene_importance = dict()
     marker_df = pd.DataFrame({'gene': gene_names, 'importance': importances})
     top_markers = marker_df.sort_values('importance', ascending=False).head(20) 
-    print(top_markers)
+    #print(top_markers)
     
     # iterate over marker_df to get the importance of each feature
+    gene_importance = dict()
     for i in range(0, len(marker_df)):
         gene_importance[marker_df["gene"][i]] = marker_df["importance"][i]
+
     ##################
-    used_features = clf.tree_.feature
-    # Remove -2 entries (they mean "leaf node", no split)
-    used_features = used_features[used_features != -2]
-    # Get unique features
-    unique_features = np.unique(used_features)
-    print(f"Number of unique genes used: {len(unique_features)}")
-    #print(f"Indices of features used: {unique_features}")
-    '''
+    # Initialize set to collect unique feature indices
+    unique_feature_indices = []
+    # Loop through each decision tree in the forest
+    for estimator in rf_clf.estimators_:
+        features = estimator.tree_.feature
+        split_features = features[features != -2]  # -2 means it's a leaf
+        split_features = list(split_features)
+        unique_feature_indices = unique_feature_indices + split_features
+    
+    unique_feature_indices = np.unique(unique_feature_indices)
+    print(f"Number of unique genes used in splits: {len(unique_feature_indices)}")
+
     gene_names = list(gene_names)
     selected_genes = []
-    for i in unique_features:
+    for i in unique_feature_indices:
         selected_genes.append([gene_names[i], gene_importance[gene_names[i]]])
     
     selected_genes = sorted(selected_genes, key = lambda x: x[1], reverse=True)
     print(f"Selected genes used in the tree:")
     for gene in selected_genes:
         print("%s: %g"%(gene[0], gene[1]))
-    '''
+    
 ###############
 
 plt.clf()
